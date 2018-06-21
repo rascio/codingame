@@ -15,15 +15,25 @@
           (recur (dec i) (conj map (-parse-row row))))
         map))))
 
-(defn -solve [map])
+(def START "@")
+(defn -find-start [map]
+  (reduce
+    (fn [res line]
+      (let [{x :x y :y} res row (inc x) column (.indexOf line START)]
+        (if (= -1 y)
+          {:x row :y column :state :init}
+          res)))
+    {:x -1 :y -1}
+    map))
+
+(defn -solve [{x :x y :y state :state} map])
 
 
 (defn -main [& args]
-    ; (binding [*out* *err*]
-    ;   (println "Debug messages..."))
     (let [map (-read-map)]
-    ; Write answer to stdout
-      (println "answer")))
+      (-> (-find-start map)
+        (-solve map)
+        (println "answer"))))
 
 (def input "10 10
 ##########
