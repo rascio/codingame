@@ -16,7 +16,7 @@
         map))))
 
 (defn -solve [map])
-    
+
 
 (defn -main [& args]
     ; (binding [*out* *err*]
@@ -24,3 +24,21 @@
     (let [map (-read-map)]
     ; Write answer to stdout
       (println "answer")))
+
+(def input "10 10
+##########
+#        #
+#  S   W #
+#        #
+#  $     #
+#        #
+#@       #
+#        #
+#E     N #
+##########")
+(defn test []
+  (binding [*in* (new clojure.lang.LineNumberingPushbackReader
+                   (clojure.java.io/reader
+                     (clojure.java.io/input-stream
+                       (.getBytes input))))]
+    (-main)))
