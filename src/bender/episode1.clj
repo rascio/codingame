@@ -9,6 +9,11 @@
 (defn -parse-row [row]
     (str/split row #"|"))
 
+(defn is-free [map state tile state]
+  (and (not= tile "#")
+       (or (= state :breaker)
+           (not= tile "X"))))
+
 (defn -read-map []
   (let [L (read) C (read) _ (read-line)]
     (loop [i L map []]
@@ -24,12 +29,12 @@
     (fn [{x :x y :y :as res} line]
       (let [row (inc y) column (.indexOf line START)]
         (if (= -1 x)
-          {:x column :y row :state :init}
+          {:x column :y row}
           res)))
     {:x -1 :y -1}
     map))
 
-(defn directions [direction x y]
+(defn move [x y direction]
   (case direction
     :NORTH [x (dec y)]
     :EAST  [(inc x) y]
@@ -37,30 +42,23 @@
     :WEST  [(dec x) y]
     nil))
 
-(defn move [{x :x y :y :as state} dir map]
-  (let [[next-x next-y] (directions dir x y)]
-    (case (get-in map [next-x next-y])
-      " " (assoc state :dir dir :x next-x :y next-y)
-      nil)))
-
-(defn find-direction [state m & dir]
-  (->> dir
-    (map #(move state % m))
+(defn find-next [map & state]
+  (->> (:directions state)
+    (map #(move map %))
     (map #(do (log %) %))
     (filter some?)
     first))
 
-(defmulti -solve (fn [state & args] (:state state)))
-(defmethod -solve :init [state map]
-  (let [next (find-direction state map :SOUTH :EAST :NORTH :WEST)]
-    (println (:dir next))))
-(defmethod -solve :default [a b]
-  (println "default" a b))
+(defn solve [map & state]
+  (loop [next (find-next state map (:directions state))]))
+
 
 (defn -main [& args]
     (let [map (-read-map)]
-      (-> (-find-start map)
-        (-solve map))))
+      (solve map
+          :position (-find-start map)
+          :state :init
+          :directions [:SOUTH :EAST :NORTH :WEST])))
 
 (def input "10 10
 ##########
