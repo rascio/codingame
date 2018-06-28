@@ -4,15 +4,16 @@
 (defn log [& args]
   (binding [*out* *err*]
     (apply println "DEBUG:" args))
-  args)
+  (last args))
 
 (defn -parse-row [row]
     (str/split row #"|"))
 
-(defn is-free [map state tile state]
-  (and (not= tile "#")
-       (or (= state :breaker)
-           (not= tile "X"))))
+(defn is-free [tiles x y & {state :state}]
+  (let [tile (get-in tiles [x y])]
+    (and (not= tile "#")
+         (or (= state :breaker)
+             (not= tile "X")))))
 
 (defn -read-map []
   (let [L (read) C (read) _ (read-line)]
@@ -35,6 +36,7 @@
     map))
 
 (defn move [x y direction]
+  (log "move" x y direction)
   (case direction
     :NORTH [x (dec y)]
     :EAST  [(inc x) y]
@@ -42,16 +44,18 @@
     :WEST  [(dec x) y]
     nil))
 
-(defn find-next [map & state]
-  (->> (:directions state)
-    (map #(move map %))
-    (map #(do (log %) %))
+(defn find-next [tiles & {position :position directions :directions :as state}]
+  (log "find-next" state)
+  (->> (log directions)
+    (map #(move (:x position) (:y position) %))
+    (map #(log %))
     (filter some?)
+    (filter #(apply is-free tiles % state))
     first))
 
 (defn solve [map & state]
-  (loop [next (find-next state map (:directions state))]))
-
+  (let [next (apply find-next map state)]
+    (log "next:" next)))
 
 (defn -main [& args]
     (let [map (-read-map)]
