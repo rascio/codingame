@@ -7,62 +7,90 @@
   (last args))
 
 (defn -parse-row [row]
-    (str/split row #"|"))
+  (into [] (map str row)))
 
-(defn is-free [tiles x y & {state :state}]
-  (let [tile (get-in tiles [x y])]
-    (and (not= tile "#")
-         (or (= state :breaker)
-             (not= tile "X")))))
+(defn is-free? [tiles x y {breaker :breaker}]
+  ; (log "is-free" x y state)
+  (let [tile (get-in tiles [y x])]
+    ; (log x y tile
+      (and some?
+        (not= tile "#")
+        (or breaker
+          (not= tile "X")))))
 
 (defn -read-map []
   (let [L (read) C (read) _ (read-line)]
     (loop [i L map []]
       (if (> i 0)
         (let [row (read-line)]
-          (log row)
+          ; (log row)
           (recur (dec i) (conj map (-parse-row row))))
         map))))
 
 (def START "@")
-(defn -find-start [map]
+(defn -find-start [tiles]
   (reduce
     (fn [{x :x y :y :as res} line]
-      (let [row (inc y) column (.indexOf line START)]
-        (if (= -1 x)
-          {:x column :y row}
-          res)))
+      (let [column (inc y) row (.indexOf line START)]
+        ; (log "x" x "y" y row line)
+        (if (not= -1 row)
+          ; (log "found"
+            (reduced {:x row :y column})
+          {:x x :y (inc y)})))
     {:x -1 :y -1}
-    map))
+    tiles))
 
 (defn move [x y direction]
-  (log "move" x y direction)
+  ; (log "move" x y direction)
   (case direction
-    :NORTH [x (dec y)]
-    :EAST  [(inc x) y]
-    :SOUTH [x (inc y)]
-    :WEST  [(dec x) y]
+    :NORTH {:x x        :y (dec y)}
+    :EAST  {:x (inc x)  :y y}
+    :SOUTH {:x x        :y (inc y)}
+    :WEST  {:x (dec x)  :y y}
     nil))
 
-(defn find-next [tiles & {position :position directions :directions :as state}]
-  (log "find-next" state)
-  (->> (log directions)
+(defn find-next [tiles {position :position directions :directions
+                        inverted :inverted :as state}]
+  ; (log "find-next" state)
+  (->> directions
     (map #(move (:x position) (:y position) %))
-    (map #(log %))
+    ; (map #(log %))
     (filter some?)
-    (filter #(apply is-free tiles % state))
+    (filter (fn [{y :y x :x}] (is-free? tiles x y state)))
     first))
 
-(defn solve [map & state]
-  (let [next (apply find-next map state)]
-    (log "next:" next)))
+(defn solve [tiles {directions :directions breaker :breaker
+                    inverted :inverted :as state}]
+  (let [next (find-next tiles state)
+        tile (get-in tiles [(:y next) (:x next)])]
+    ; (letfn [(change-direction (fn [d] (assoc (solve tiles
+    ;                                            (assoc state :directions '(d)))
+    ;                                     :directions directions)))]
+      (log "next:" next)
+      (assoc
+        (case tile
+          "N" (assoc (solve tiles (assoc state :directions '(:NORTH)))
+                :directions directions)
+          "S" (assoc (solve tiles (assoc state :directions '(:SOUTH)))
+                :directions directions)
+          "W" (assoc (solve tiles (assoc state :directions '(:WEST)))
+                :directions directions)
+          "E" (assoc (solve tiles (assoc state :directions '(:EAST)))
+                :directions directions)
+          "B" (assoc state :breaker (not breaker))
+          "I" (assoc state :inverted (not inverted))
+          " " state
+          "$" :win
+          (log "EH?!" tile))
+        :position
+        next)))
 
 (defn -main [& args]
     (let [map (-read-map)]
-      (solve map
-          :position (-find-start map)
-          :state :init
-          :directions [:SOUTH :EAST :NORTH :WEST])))
+      (->> {:position (-find-start map)
+                  :directions '(:SOUTH :EAST :NORTH :WEST)}
+        (solve map)
+        (solve map))))
 
 (def input "10 10
 ##########
