@@ -52,7 +52,7 @@
 (defn find-next [tiles {position :position directions :directions
                         inverted :inverted :as state}]
   ; (log "find-next" state)
-  (->> directions
+  (->> (if inverted (reverse directions) directions)
     (map #(move (:x position) (:y position) %))
     ; (map #(log %))
     (filter some?)
