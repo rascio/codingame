@@ -61,29 +61,29 @@
 
 (defn solve [tiles {directions :directions breaker :breaker
                     inverted :inverted :as state}]
+  (log "solve" (:position state) directions)
   (let [next (find-next tiles state)
         tile (get-in tiles [(:y next) (:x next)])]
-    ; (letfn [(change-direction (fn [d] (assoc (solve tiles
-    ;                                            (assoc state :directions '(d)))
-    ;                                     :directions directions)))]
-      (log "next:" next)
+    (log "next:" next tile)
+    (letfn [(change-direction [d]
+             (log "cd" d state
+              (assoc (solve tiles
+                       (assoc state :directions '(d) :position next))
+                :directions directions)))]
       (assoc
         (case tile
-          "N" (assoc (solve tiles (assoc state :directions '(:NORTH)))
-                :directions directions)
-          "S" (assoc (solve tiles (assoc state :directions '(:SOUTH)))
-                :directions directions)
-          "W" (assoc (solve tiles (assoc state :directions '(:WEST)))
-                :directions directions)
-          "E" (assoc (solve tiles (assoc state :directions '(:EAST)))
-                :directions directions)
-          "B" (assoc state :breaker (not breaker))
-          "I" (assoc state :inverted (not inverted))
-          " " state
-          "$" :win
+          "N" (change-direction :NORTH)
+          "S" (change-direction :SOUTH)
+          "W" (change-direction :WEST)
+          "E" (change-direction :EAST)
+          "B" (assoc state :breaker (not breaker) :position next)
+          "I" (assoc state :inverted (not inverted) :position next)
+          " " (assoc state :position next)
+          "X" (assoc state :position next)
+          "$" :end
           (log "EH?!" tile))
         :position
-        next)))
+        next))))
 
 (defn -main [& args]
     (let [map (-read-map)]
@@ -104,8 +104,9 @@
 #E     N #
 ##########")
 (defn test []
-  (binding [*in* (new clojure.lang.LineNumberingPushbackReader
-                   (clojure.java.io/reader
-                     (clojure.java.io/input-stream
-                       (.getBytes input))))]
+  (binding [*in* (->> input
+                   .getBytes
+                   clojure.java.io/input-stream
+                   clojure.java.io/reader
+                   (new clojure.lang.LineNumberingPushbackReader))]
     (-main)))
