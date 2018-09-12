@@ -68,7 +68,7 @@
     (letfn [(change-direction [d]
              (log "cd" d state
               (assoc (solve tiles
-                       (assoc state :directions '(d) :position next))
+                       (assoc state :directions [d] :position next))
                 :directions directions)))]
       (assoc
         (case tile
@@ -88,7 +88,7 @@
 (defn -main [& args]
     (let [map (-read-map)]
       (->> {:position (-find-start map)
-                  :directions '(:SOUTH :EAST :NORTH :WEST)}
+                  :directions [:SOUTH :EAST :NORTH :WEST]}
         (solve map)
         (solve map))))
 
