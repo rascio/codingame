@@ -28,3 +28,11 @@
   (is (= 2 (length (-seq-of 1 2))))
   (is (= 3 (length (-seq-of 1 2 3))))
   (is (= 4 (length (-seq-of 1 2 3 4)))))
+
+(deftest test-my-flatten
+  (is (= '() (my-flatten '())))
+  (is (= '(1) (my-flatten '(1))))
+  (is (= '(1 2) (my-flatten '(1 (2)))))
+  (is (= '(1 2 3) (my-flatten '(1 (2 3)))))
+  (is (= '(1 2 3 4) (my-flatten '(1 (2 (3 4))))))
+  (is (= '(1 2 3 4 5) (my-flatten '(1 (2 (3 4) 5))))))
