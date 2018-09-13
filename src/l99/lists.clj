@@ -37,3 +37,11 @@
            (nil? head))
     0
     (inc (length tail))))
+
+(defn reverse
+  "P05 (*) Reverse a list."
+  ([elements] (reverse elements '()))
+  ([[head & tail] res]
+   (if (nil? tail)
+     (cons head res)
+     (reverse (cons head res)))))
