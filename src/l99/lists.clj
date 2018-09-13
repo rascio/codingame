@@ -3,14 +3,18 @@
 ;http://www.ic.unicamp.br/~meidanis/courses/mc336/2006s2/funcional/L-99_Ninety-Nine_Lisp_Problems.html
 
 (defn my-last
-    "ind the last box of a list."
+    "P01 (*) Find the last box of a list.
+      Example:
+      * (my-last '(a b c d))
+      (D)
+      "
     [[head & tail]]
     (if (nil? tail)
       head
       (my-last tail)))
 
 (defn my-but-last
-  "Find the last but one box of a list.
+  "P02 (*) Find the last but one box of a list.
       Example:
       * (my-but-last '(a b c d))
       (C D)"
@@ -45,3 +49,23 @@
    (if (nil? tail)
      (cons head res)
      (reverse (cons head res)))))
+
+(def palindrome?
+  "P06 (*) Find out whether a list is a palindrome.
+      A palindrome can be read forward or backward; e.g. (x a m a x).")
+
+(defn my-flatten
+  "P07 (**) Flatten a nested list structure.
+      Transform a list, possibly holding lists as elements into a `flat' list by replacing each list with its elements (recursively).
+      Example:
+      * (my-flatten '(a (b (c d) e)))
+      (A B C D E)"
+  ([[head & tail]]
+   (if (nil? head)
+     '()
+     (let [res (my-flatten tail)]
+       (if (seq? head)
+         (-> head
+             my-flatten
+             (concat res))
+         (cons head res))))))

@@ -24,7 +24,7 @@
   (is (= nil (element-at '(1) 1))))
 
 (deftest test-length
-  (is (= 0 (length '()))
+  (is (= 0 (length '())))
   (is (= 1 (length '(1))))
   (is (= 2 (length '(1 2))))
   (is (= 3 (length '(1 2 3))))
@@ -36,3 +36,11 @@
   (is (= '(2 1) (reverse '(1 2))))
   (is (= '(3 2 1) (reverse '(1 2 3))))
   (is (= '(4 3 2 1) (reverse '(1 2 3 4)))))
+
+(deftest test-my-flatten
+  (is (= '() (my-flatten '())))
+  (is (= '(1) (my-flatten '(1))))
+  (is (= '(1 2) (my-flatten '(1 (2)))))
+  (is (= '(1 2 3) (my-flatten '(1 (2 3)))))
+  (is (= '(1 2 3 4) (my-flatten '(1 (2 (3 4))))))
+  (is (= '(1 2 3 4 5) (my-flatten '(1 (2 (3 4) 5))))))
